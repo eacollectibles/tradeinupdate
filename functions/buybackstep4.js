@@ -37,6 +37,29 @@ exports.handler = async (event) => {
     let total = 0;
 
     for (const { name, condition } of cards) {
+  if (!name || typeof name !== 'string') continue;
+
+  const match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
+
+  if (match) {
+    const basePrice = match.price;
+    const rate = getBuybackRate(basePrice);
+    let payout = 0;
+
+    if (rate === "flat") {
+      payout = 0;
+    } else {
+      const modifier = conditionModifiers[condition] || 0.0;
+      payout = basePrice * rate * modifier;
+    }
+
+    total += payout;
+    results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : `${(rate * 100).toFixed(0)}%` });
+  } else {
+    results.push({ name, condition, error: "Card not found" });
+  }
+  continue;
+
       const match = productDB.find(p =>
         p.name.toLowerCase().includes(name.toLowerCase())
       );
