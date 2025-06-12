@@ -53,7 +53,7 @@ exports.handler = async (event) => {
         }
 
         total += payout;
-        results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : `${(rate * 100).toFixed(0)}%` });
+        results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : rate.toFixed(2) });
       } else {
         results.push({ name, condition, error: "Card not found" });
       }
