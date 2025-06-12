@@ -4,15 +4,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Buyback Portal</title>
+  <title>Trade In Portal</title>
   <style>
-    .card-row { margin-bottom: 10px; }
-    .card-row input, .card-row select { margin-right: 5px; }
-    .remove-card { background: red; color: white; border: none; padding: 4px 8px; cursor: pointer; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    h1 { font-size: 2rem; margin-bottom: 20px; }
+    .card-row { margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+    .card-row input, .card-row select { padding: 5px; flex: 1; }
+    .remove-card { background: red; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; }
+    .results { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+    .results h2 { font-size: 1.25rem; margin-bottom: 10px; }
+    .result-entry { margin-bottom: 8px; }
+    .total { font-weight: bold; margin-top: 15px; font-size: 1.2rem; }
+    button { padding: 8px 12px; border: none; background: #0077cc; color: white; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #005fa3; }
   </style>
 </head>
 <body>
-  <h1>Submit Your Trade</h1>
+  <h1>Trade In Portal</h1>
   <form>
     <div id="card-container">
       <div class="card-row">
@@ -29,11 +37,20 @@
     <button type="submit">Submit Trade</button>
   </form>
 
+  <div class="results" id="results" style="display:none;">
+    <h2>Trade Results</h2>
+    <div id="result-list"></div>
+    <div class="total" id="total-value"></div>
+  </div>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.querySelector("form");
       const addBtn = document.getElementById("add-card");
       const container = document.getElementById("card-container");
+      const resultsSection = document.getElementById("results");
+      const resultList = document.getElementById("result-list");
+      const totalValue = document.getElementById("total-value");
 
       addBtn.addEventListener("click", () => {
         const row = document.createElement("div");
@@ -74,8 +91,16 @@
         })
         .then(res => res.json())
         .then(data => {
-          console.log("Response:", data);
-          alert("Trade submitted! Check console for debug info.");
+          resultList.innerHTML = "";
+          resultsSection.style.display = "block";
+          data.results.forEach(card => {
+            if (card.payout) {
+              resultList.innerHTML += `<div class="result-entry">${card.name} (${card.condition}) → $${card.payout}</div>`;
+            } else {
+              resultList.innerHTML += `<div class="result-entry">${card.name} (${card.condition}) → ${card.error}</div>`;
+            }
+          });
+          totalValue.textContent = "Total Trade Offer: $" + data.total;
         });
       });
     });
