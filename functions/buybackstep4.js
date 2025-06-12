@@ -39,7 +39,7 @@ exports.handler = async (event) => {
     for (const { name, condition } of cards) {
   if (!name || typeof name !== 'string') continue;
 
-  const match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
+  let match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
 
   if (match) {
     const basePrice = match.price;
@@ -58,7 +58,6 @@ exports.handler = async (event) => {
   } else {
     results.push({ name, condition, error: "Card not found" });
   }
-  continue;
 
       const match = productDB.find(p =>
         p.name.toLowerCase().includes(name.toLowerCase())
