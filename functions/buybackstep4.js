@@ -48,12 +48,14 @@ exports.handler = async (event) => {
       const retail = match.price;
       const baseRate = getBuybackRate(retail);
       let buyback = 0;
+      let offer_percent = "—";
 
       if (baseRate === "flat") {
         buyback = 0.50;
       } else if (baseRate > 0) {
         const conditionFactor = conditionModifiers[condition] || 0.0;
         buyback = retail * baseRate * conditionFactor;
+        offer_percent = `${Math.round(baseRate * conditionFactor * 100)}%`;
       }
 
       buyback = Math.round(buyback * 100) / 100;
@@ -63,7 +65,8 @@ exports.handler = async (event) => {
         name: match.name,
         retail: `$${retail.toFixed(2)}`,
         condition,
-        offer: `$${buyback.toFixed(2)}`
+        offer: `$${buyback.toFixed(2)}`,
+        offer_percent
       });
     }
 
