@@ -91,7 +91,7 @@
     addBtn.addEventListener("click", () => {
       const row = document.createElement("div");
       row.className = "card-row";
-      row.innerHTML = \`
+      row.innerHTML = `
         <input type="text" name="cardName" placeholder="Card Name" required />
         <select name="condition">
           <option value="NM">NM</option>
@@ -99,7 +99,7 @@
           <option value="MP">MP</option>
         </select>
         <button type="button" class="remove-card">❌ Remove</button>
-      \`;
+      `;
       container.appendChild(row);
     });
 
