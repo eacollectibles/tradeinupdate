@@ -39,7 +39,10 @@
 
   <div class="results" id="results" style="display:none;">
     <h2>Trade Results</h2>
+    
     <div id="result-list"></div>
+    <div id="approval-list"></div>
+    
     <div class="total" id="total-value"></div>
   </div>
 
@@ -100,7 +103,45 @@
               resultList.innerHTML += `<div class="result-entry">${card.name} (${card.condition}) → ${card.error}</div>`;
             }
           });
-          totalValue.textContent = "Total Trade Offer: $" + data.total;
+          
+    // Build approval controls
+    const approvalList = document.getElementById("approval-list");
+    approvalList.innerHTML = "<h3>Approve Cards for Store Credit</h3>";
+
+    let approvedTotal = 0;
+    const approvedMap = new Map();
+
+    data.results.forEach((card, index) => {
+      if (card.payout) {
+        const row = document.createElement("div");
+        row.className = "result-entry";
+        row.innerHTML = `
+          <input type="checkbox" id="approve-${index}" checked />
+          <label for="approve-${index}">${card.name} (${card.condition}) → $${card.payout}</label>
+        `;
+        approvalList.appendChild(row);
+        approvedMap.set(index, parseFloat(card.payout));
+        approvedTotal += parseFloat(card.payout);
+      }
+    });
+
+    function updateApprovedTotal() {
+      approvedTotal = 0;
+      approvedMap.forEach((value, index) => {
+        const checkbox = document.getElementById("approve-" + index);
+        if (checkbox && checkbox.checked) {
+          approvedTotal += value;
+        }
+      });
+      const code = "CREDIT-" + new Date().toISOString().slice(0,10).replace(/-/g, '') + "-" + Math.floor(Math.random()*900+100);
+      totalValue.innerHTML = "Approved Total: $" + approvedTotal.toFixed(2) + "<br><br>Simulated Store Credit Code: <strong>" + code + "</strong>";
+    }
+
+    updateApprovedTotal();
+    document.querySelectorAll("input[type='checkbox']").forEach(box => {
+      box.addEventListener("change", updateApprovedTotal);
+    });
+    
         });
       });
     });
