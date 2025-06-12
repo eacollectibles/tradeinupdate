@@ -4,94 +4,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trade In Portal</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>Buyback Portal</title>
+  <style>
+    .card-row { margin-bottom: 10px; }
+    .card-row input, .card-row select { margin-right: 5px; }
+    .remove-card { background: red; color: white; border: none; padding: 4px 8px; cursor: pointer; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Trade-In Portal</h1> <!-- Forced redeploy trigger -->
-    <form id="buybackForm">
-      <div id="cardList">
-        <div class="card-entry">
-          <input type="text" name="cardName" placeholder="Card Name" required />
-          <select name="condition" required>
-            <option value="">Condition</option>
-            <option value="NM">Near Mint</option>
-            <option value="LP">Lightly Played</option>
-            <option value="MP">Moderately Played</option>
-          </select>
-        </div>
-      </div>
-      <button type="button" id="addCard">+ Add Another Card</button>
-      <button type="submit">Submit Trade-In</button>
-    </form>
-    <div id="result"></div>
-  </div>
-
-  <script>
-    const form = document.getElementById("buybackForm");
-    const cardList = document.getElementById("cardList");
-    const addCard = document.getElementById("addCard");
-    const result = document.getElementById("result");
-
-    addCard.addEventListener("click", () => {
-      const entry = document.createElement("div");
-      entry.classList.add("card-entry");
-      entry.innerHTML = `
-        <input type="text" name="cardName" placeholder="Card Name" required />
-        <select name="condition" required>
-          <option value="">Condition</option>
-          <option value="NM">Near Mint</option>
-          <option value="LP">Lightly Played</option>
-          <option value="MP">Moderately Played</option>
-        </select>
-      `;
-      cardList.appendChild(entry);
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const inputs = form.querySelectorAll(".card-entry");
-      const cards = [];
-
-      inputs.forEach(entry => {
-        const name = entry.querySelector("input[name='cardName']").value.trim();
-        const condition = entry.querySelector("select[name='condition']").value;
-        if (name && condition) {
-          cards.push({ cardName: name, condition });
-        }
-      });
-
-      const response = await fetch("/.netlify/functions/buybackstep4", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cards })
-      });
-
-      const data = await response.json();
-      if (data.message) {
-        result.innerHTML = `<p class="error">${data.message}</p>`;
-      } else {
-        let html = "<div class='card'><ul>";
-        data.results.forEach((item, index) => {
-          html += `<li><strong>${index + 1}.</strong> ${item.product} (${item.condition}) — Retail: ${item.retailPrice}, Buyback: ${item.buybackOffer}</li>`;
-        });
-        html += `</ul><p><strong>Total Offer:</strong> $${data.total}</p></div>`;
-        result.innerHTML = html;
-      }
-    });
-  </script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const form = document.querySelector("form");
-    const addBtn = document.getElementById("add-card");
-    const container = document.getElementById("card-container");
-
-    addBtn.addEventListener("click", () => {
-      const row = document.createElement("div");
-      row.className = "card-row";
-      row.innerHTML = `
+  <h1>Submit Your Trade</h1>
+  <form>
+    <div id="card-container">
+      <div class="card-row">
         <input type="text" name="cardName" placeholder="Card Name" required />
         <select name="condition">
           <option value="NM">NM</option>
@@ -99,40 +23,62 @@
           <option value="MP">MP</option>
         </select>
         <button type="button" class="remove-card">❌ Remove</button>
-      `;
-      container.appendChild(row);
-    });
+      </div>
+    </div>
+    <button type="button" id="add-card">➕ Add Card</button>
+    <button type="submit">Submit Trade</button>
+  </form>
 
-    container.addEventListener("click", (e) => {
-      if (e.target.classList.contains("remove-card")) {
-        e.target.parentElement.remove();
-      }
-    });
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const addBtn = document.getElementById("add-card");
+      const container = document.getElementById("card-container");
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const cards = [];
-      document.querySelectorAll(".card-row").forEach(row => {
-        const name = row.querySelector("input[name='cardName']").value.trim();
-        const condition = row.querySelector("select[name='condition']").value;
-        if (name) {
-          cards.push({ cardName: name, condition });
+      addBtn.addEventListener("click", () => {
+        const row = document.createElement("div");
+        row.className = "card-row";
+        row.innerHTML = `
+          <input type="text" name="cardName" placeholder="Card Name" required />
+          <select name="condition">
+            <option value="NM">NM</option>
+            <option value="LP">LP</option>
+            <option value="MP">MP</option>
+          </select>
+          <button type="button" class="remove-card">❌ Remove</button>
+        `;
+        container.appendChild(row);
+      });
+
+      container.addEventListener("click", (e) => {
+        if (e.target.classList.contains("remove-card")) {
+          e.target.parentElement.remove();
         }
       });
 
-      fetch("/.netlify/functions/buybackstep4", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cards })
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Response:", data);
-        alert("Trade submitted! Check console for debug info.");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cards = [];
+        document.querySelectorAll(".card-row").forEach(row => {
+          const name = row.querySelector("input[name='cardName']").value.trim();
+          const condition = row.querySelector("select[name='condition']").value;
+          if (name) {
+            cards.push({ cardName: name, condition });
+          }
+        });
+
+        fetch("/.netlify/functions/buybackstep4", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cards })
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Response:", data);
+          alert("Trade submitted! Check console for debug info.");
+        });
       });
     });
-  });
-</script>
+  </script>
 </body>
-
 </html>
