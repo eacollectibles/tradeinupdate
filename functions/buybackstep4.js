@@ -7,7 +7,15 @@ const productDB = [
   { name: "Bulbasaur", price: 5.25 },
   { name: "Ratata", price: 3.75 },
   { name: "Metapod", price: 2.75 },
-  { name: "Energy Card", price: 1.50 }
+  { name: "Energy Card", price: 1.50 },
+  { name: "Blastoise", price: 48.00 },
+  { name: "Snorlax", price: 26.00 },
+  { name: "Mewtwo", price: 38.50 },
+  { name: "Jigglypuff", price: 9.00 },
+  { name: "Gengar", price: 19.99 },
+  { name: "Zapdos", price: 29.95 },
+  { name: "Charmander", price: 6.00 },
+  { name: "Squirtle", price: 7.50 }
 ];
 
 const getBuybackRate = (price) => {
@@ -27,8 +35,6 @@ const conditionModifiers = {
   "MP": 0.70
 };
 
-
-
 exports.handler = async (event) => {
   try {
     console.log("Received event body:", event.body);
@@ -38,10 +44,10 @@ exports.handler = async (event) => {
     let results = [];
     let total = 0;
 
-    for (const { name, condition } of cards) {
-      if (!name || typeof name !== 'string') continue;
+    for (const { cardName, condition } of cards) {
+      if (!cardName || typeof cardName !== 'string') continue;
 
-      let match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
+      let match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === cardName.toLowerCase());
 
       if (match) {
         const basePrice = match.price;
@@ -57,7 +63,7 @@ exports.handler = async (event) => {
 
         total += payout;
         results.push({
-          name,
+          name: cardName,
           condition,
           basePrice,
           rate: rate === "flat" ? "0.00" : rate.toFixed(2),
@@ -65,7 +71,7 @@ exports.handler = async (event) => {
           payout: payout.toFixed(2)
         });
       } else {
-        results.push({ name, condition, error: "Card not found" });
+        results.push({ name: cardName, condition, error: "Card not found" });
       }
     }
 
