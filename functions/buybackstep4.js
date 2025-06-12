@@ -1,51 +1,80 @@
 
-exports.handler = async (event, context) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
+const productDB = [
+  { name: "Charizard", price: 55.00 },
+  { name: "Pikachu", price: 25.00 },
+  { name: "Dark Magician", price: 15.50 },
+  { name: "Blue Eyes White Dragon", price: 8.00 },
+  { name: "Bulbasaur", price: 5.25 },
+  { name: "Ratata", price: 3.75 },
+  { name: "Metapod", price: 2.75 },
+  { name: "Energy Card", price: 1.50 }
+];
 
-  const { cards } = JSON.parse(event.body);
+const getBuybackRate = (price) => {
+  if (price >= 50.00) return 0.75;
+  if (price >= 25.00) return 0.70;
+  if (price >= 15.01) return 0.65;
+  if (price >= 8.00) return 0.50;
+  if (price >= 5.00) return 0.35;
+  if (price >= 3.01) return 0.25;
+  if (price >= 2.00) return "flat";
+  return 0.00;
+};
 
-  if (!Array.isArray(cards) || cards.length === 0) {
+const conditionModifiers = {
+  "NM": 1.0,
+  "LP": 0.85,
+  "MP": 0.70
+};
+
+exports.handler = async (event) => {
+  try {
+    const body = JSON.parse(event.body);
+    const cards = body.cards || [];
+
+    let results = [];
+    let total = 0;
+
+    for (const { name, condition } of cards) {
+      const match = productDB.find(p =>
+        p.name.toLowerCase().includes(name.toLowerCase())
+      );
+
+      if (!match) {
+        results.push({ name, error: "Card not found" });
+        continue;
+      }
+
+      const retail = match.price;
+      const baseRate = getBuybackRate(retail);
+      let buyback = 0;
+
+      if (baseRate === "flat") {
+        buyback = 0.50;
+      } else if (baseRate > 0) {
+        const conditionFactor = conditionModifiers[condition] || 0.0;
+        buyback = retail * baseRate * conditionFactor;
+      }
+
+      buyback = Math.round(buyback * 100) / 100;
+      total += buyback;
+
+      results.push({
+        name: match.name,
+        retail: `$${retail.toFixed(2)}`,
+        condition,
+        offer: `$${buyback.toFixed(2)}`
+      });
+    }
+
     return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No cards submitted." })
+      statusCode: 200,
+      body: JSON.stringify({ results, total: `$${total.toFixed(2)}` })
+    };
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Failed to process trade-in" })
     };
   }
-
-  const inventory = {
-    "Charizard": { price: 250 },
-    "Blastoise": { price: 150 },
-    "Pikachu": { price: 50 },
-    "Dark Magician": { price: 120 },
-    "Blue-Eyes White Dragon": { price: 300 }
-  };
-
-  const rates = { NM: 0.7, LP: 0.6, MP: 0.5 };
-  let results = [];
-  let total = 0;
-
-  cards.forEach(({ cardName, condition }) => {
-    const key = Object.keys(inventory).find(name =>
-      name.toLowerCase().includes(cardName.toLowerCase())
-    );
-    if (!key || !rates[condition]) return;
-
-    const price = inventory[key].price;
-    const rate = rates[condition];
-    const offer = parseFloat((price * rate).toFixed(2));
-    total += offer;
-
-    results.push({
-      product: key,
-      condition,
-      retailPrice: `$${price.toFixed(2)}`,
-      buybackOffer: `$${offer.toFixed(2)}`
-    });
-  });
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ results, total: total.toFixed(2) })
-  };
 };
