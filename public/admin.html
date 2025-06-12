@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trade Approval Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    h1 { font-size: 1.8rem; }
+    .trade { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 6px; }
+    .card-line { margin: 5px 0; }
+    .approve-btn { background: green; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    .approve-btn:hover { background: darkgreen; }
+    .result { margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+
+<body style="display:none;">
+  <div id="login-screen">
+    <h1>Admin Login</h1>
+    <input type="password" id="admin-password" placeholder="Enter password" />
+    <button id="login-button">Login</button>
+    <p id="login-error" style="color:red;"></p>
+  </div>
+  <div id="admin-content" style="display:none;">
+
+  <h1>Trade Approval Dashboard</h1>
+  <div id="trade-list"></div>
+
+  <script>
+    // Mock trades
+    const mockTrades = [
+      {
+        id: "T123",
+        customer: "John Doe",
+        cards: [
+          { name: "Charizard", condition: "NM", payout: "41.25" },
+          { name: "Bulbasaur", condition: "LP", payout: "1.56" }
+        ],
+        total: "42.81"
+      },
+      {
+        id: "T124",
+        customer: "Jane Smith",
+        cards: [
+          { name: "Mewtwo", condition: "MP", payout: "18.01" },
+          { name: "Jigglypuff", condition: "NM", payout: "4.50" }
+        ],
+        total: "22.51"
+      }
+    ];
+
+    const list = document.getElementById("trade-list");
+
+    mockTrades.forEach(trade => {
+      const div = document.createElement("div");
+      div.className = "trade";
+      div.innerHTML = `
+        <strong>Trade ID:</strong> ${trade.id}<br>
+        <strong>Customer:</strong> ${trade.customer}<br><br>
+        ${trade.cards.map(c => `<div class="card-line">${c.name} (${c.condition}) → $${c.payout}</div>`).join("")}
+        <br><strong>Total:</strong> $${trade.total}<br><br>
+        <button class="approve-btn" data-id="${trade.id}">✅ Approve Trade</button>
+        <div class="result" id="result-${trade.id}"></div>
+      `;
+      list.appendChild(div);
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("approve-btn")) {
+        const tradeId = e.target.dataset.id;
+        const resultDiv = document.getElementById("result-" + tradeId);
+        const code = "CREDIT-" + new Date().toISOString().slice(0,10).replace(/-/g, '') + "-" + Math.floor(Math.random()*900+100);
+        resultDiv.innerHTML = `Approved ✅<br>Gift Card Issued: <strong>${code}</strong><br>Cards Restocked.`;
+      }
+    });
+  </script>
+
+  </div>
+  <script>
+    const PASSWORD = "admin123"; // TODO: change this to your actual password
+
+    document.getElementById("login-button").addEventListener("click", () => {
+      const entered = document.getElementById("admin-password").value;
+      const errorMsg = document.getElementById("login-error");
+      if (entered === PASSWORD) {
+        document.body.style.display = "block";
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("admin-content").style.display = "block";
+      } else {
+        errorMsg.textContent = "Incorrect password.";
+      }
+    });
+
+    // Show login on page load
+    window.onload = () => {
+      document.body.style.display = "block";
+    };
+  </script>
+</body>
+
+</html>
