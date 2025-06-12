@@ -25,9 +25,9 @@ const conditionModifiers = {
   "NM": 1.0,
   "LP": 0.85,
   "MP": 0.70
-};
 
-exports.handler = async (event) => {
+  try {
+
   try {
     console.log("Received event body:", event.body);
     const body = JSON.parse(event.body);
@@ -102,6 +102,19 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to process trade-in" })
+    };
+  }
+};
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ results, total: total.toFixed(2) })
+    };
+  } catch (error) {
+    console.error("ERROR in buyback function:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal Server Error" })
     };
   }
 };
