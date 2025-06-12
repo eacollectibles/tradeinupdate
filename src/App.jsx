@@ -7,6 +7,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="*" element={<div className='p-10 text-center'>Go to <a class='text-blue-600 underline' href='/admin'>/admin</a> to view the dashboard.</div>} />
       </Routes>
     </Router>
   );
