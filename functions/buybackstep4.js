@@ -1,3 +1,4 @@
+
 const productDB = [
   { name: "Charizard", price: 55.00 },
   { name: "Pikachu", price: 25.00 },
@@ -26,6 +27,8 @@ const conditionModifiers = {
   "MP": 0.70
 };
 
+
+
 exports.handler = async (event) => {
   try {
     console.log("Received event body:", event.body);
@@ -44,16 +47,23 @@ exports.handler = async (event) => {
         const basePrice = match.price;
         const rate = getBuybackRate(basePrice);
         let payout = 0;
+        let modifier = conditionModifiers[condition] || 0.0;
 
         if (rate === "flat") {
           payout = 0;
         } else {
-          const modifier = conditionModifiers[condition] || 0.0;
           payout = basePrice * rate * modifier;
         }
 
         total += payout;
-        results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : rate.toFixed(2) });
+        results.push({
+          name,
+          condition,
+          basePrice,
+          rate: rate === "flat" ? "0.00" : rate.toFixed(2),
+          modifier,
+          payout: payout.toFixed(2)
+        });
       } else {
         results.push({ name, condition, error: "Card not found" });
       }

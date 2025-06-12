@@ -81,5 +81,58 @@
       }
     });
   </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
+    const addBtn = document.getElementById("add-card");
+    const container = document.getElementById("card-container");
+
+    addBtn.addEventListener("click", () => {
+      const row = document.createElement("div");
+      row.className = "card-row";
+      row.innerHTML = \`
+        <input type="text" name="cardName" placeholder="Card Name" required />
+        <select name="condition">
+          <option value="NM">NM</option>
+          <option value="LP">LP</option>
+          <option value="MP">MP</option>
+        </select>
+        <button type="button" class="remove-card">❌ Remove</button>
+      \`;
+      container.appendChild(row);
+    });
+
+    container.addEventListener("click", (e) => {
+      if (e.target.classList.contains("remove-card")) {
+        e.target.parentElement.remove();
+      }
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const cards = [];
+      document.querySelectorAll(".card-row").forEach(row => {
+        const name = row.querySelector("input[name='cardName']").value.trim();
+        const condition = row.querySelector("select[name='condition']").value;
+        if (name) {
+          cards.push({ cardName: name, condition });
+        }
+      });
+
+      fetch("/.netlify/functions/buybackstep4", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cards })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Response:", data);
+        alert("Trade submitted! Check console for debug info.");
+      });
+    });
+  });
+</script>
 </body>
+
 </html>
