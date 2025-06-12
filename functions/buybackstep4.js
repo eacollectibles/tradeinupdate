@@ -29,6 +29,7 @@ const conditionModifiers = {
 
 exports.handler = async (event) => {
   try {
+    console.log("Received event body:", event.body);
     const body = JSON.parse(event.body);
     const cards = body.cards || [];
 
@@ -75,6 +76,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ results, total: `$${total.toFixed(2)}` })
     };
   } catch (err) {
+    console.error("ERROR in buyback function:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to process trade-in" })
