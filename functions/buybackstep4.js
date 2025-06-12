@@ -1,4 +1,3 @@
-
 const productDB = [
   { name: "Charizard", price: 55.00 },
   { name: "Pikachu", price: 25.00 },
@@ -25,9 +24,9 @@ const conditionModifiers = {
   "NM": 1.0,
   "LP": 0.85,
   "MP": 0.70
+};
 
-  try {
-
+exports.handler = async (event) => {
   try {
     console.log("Received event body:", event.body);
     const body = JSON.parse(event.body);
@@ -37,74 +36,28 @@ const conditionModifiers = {
     let total = 0;
 
     for (const { name, condition } of cards) {
-  if (!name || typeof name !== 'string') continue;
+      if (!name || typeof name !== 'string') continue;
 
-  let match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
+      let match = productDB.find(p => typeof p.name === 'string' && p.name.toLowerCase() === name.toLowerCase());
 
-  if (match) {
-    const basePrice = match.price;
-    const rate = getBuybackRate(basePrice);
-    let payout = 0;
+      if (match) {
+        const basePrice = match.price;
+        const rate = getBuybackRate(basePrice);
+        let payout = 0;
 
-    if (rate === "flat") {
-      payout = 0;
-    } else {
-      const modifier = conditionModifiers[condition] || 0.0;
-      payout = basePrice * rate * modifier;
-    }
+        if (rate === "flat") {
+          payout = 0;
+        } else {
+          const modifier = conditionModifiers[condition] || 0.0;
+          payout = basePrice * rate * modifier;
+        }
 
-    total += payout;
-    results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : `${(rate * 100).toFixed(0)}%` });
-  } else {
-    results.push({ name, condition, error: "Card not found" });
-  }
-
-      const match = productDB.find(p =>
-        p.name.toLowerCase().includes(name.toLowerCase())
-      );
-
-      if (!match) {
-        results.push({ name, error: "Card not found" });
-        continue;
+        total += payout;
+        results.push({ name, condition, payout: payout.toFixed(2), rate: rate === "flat" ? "0.00" : `${(rate * 100).toFixed(0)}%` });
+      } else {
+        results.push({ name, condition, error: "Card not found" });
       }
-
-      const retail = match.price;
-      const baseRate = getBuybackRate(retail);
-      let buyback = 0;
-      let offer_percent = "—";
-
-      if (baseRate === "flat") {
-        buyback = 0.50;
-      } else if (baseRate > 0) {
-        const conditionFactor = conditionModifiers[condition] || 0.0;
-        buyback = retail * baseRate * conditionFactor;
-        offer_percent = `${Math.round(baseRate * conditionFactor * 100)}%`;
-      }
-
-      buyback = Math.round(buyback * 100) / 100;
-      total += buyback;
-
-      results.push({
-        name: match.name,
-        retail: `$${retail.toFixed(2)}`,
-        condition,
-        offer: `$${buyback.toFixed(2)}`,
-        offer_percent
-      });
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ results, total: `$${total.toFixed(2)}` })
-    };
-  } catch (err) {
-    console.error("ERROR in buyback function:", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to process trade-in" })
-    };
-  }
-};
 
     return {
       statusCode: 200,
